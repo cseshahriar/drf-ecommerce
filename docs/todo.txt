@@ -1,0 +1,85 @@
+1. Primary field list
+2. List of subjects
+3. Mission objectives
+4. System requirements
+
+Phase 1
+    Inventory RESTful API
+
+table of contents:
+    1. Introdution
+    1.1 Purpose of Document
+    1.2 Project Scope
+
+    2. Functional objectives
+    2.1 hight priority
+
+    3. supportability
+    4. Security
+    5. RESTful API documentation
+    6. Interfaces
+    7. Context Diagram
+
+    Appendix A: Functional requirements
+
+    field checklist
+    ----------------
+    * represents a distinc characteristic of the subject of the table
+    * contain only a single value
+    * cannot be deconstructed into smaller components
+    * is a unique characteristic
+
+    table checklist
+    ---------------
+    * represents a single subjet/entity
+    * does not contain multipart field
+    * does not contain multi valued fields
+    * does not contain calculated fields
+    * contains a minimal amount of redundant data
+
+    table naming guidlines
+    ----------------------
+    * unique(identifies only one subject)
+    * Meaningful / Descriptive
+    * Identifies the subject / entity of the table
+    * Minumum number of words possible
+    * Avoid acronyms and abbreviations
+    * Avoid plural names
+
+    identifies keys
+    ---------------
+
+    primary key guidlines
+    ---------------------
+    * Unique
+    * Must not be multipart
+    * Is not an optional value
+    * Exclusively identfy the record
+
+    field specification(general)
+    * name
+    * description
+
+    field specification(physical Attributes)
+    * Data Type
+    * length
+    * decimal places
+    * character types(Letter, number, special)
+
+    field specification(logical Attributes)
+    * key type(primary, foreign, Non)
+    * Uniqueness(Unique / Non-Unique)
+    * Null Support
+    * Required
+    * Default
+    * Value Range
+    * editing rules
+
+
+
+
+
+
+
+
+

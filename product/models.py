@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from django.core.exceptions import ValidationError
@@ -6,7 +7,7 @@ from .fields import OrderField
 
 
 class ActiveQueryset(models.QuerySet):
-    def isactive(self):
+    def is_active(self):
         return self.filter(is_active=True)
 
 
@@ -37,16 +38,27 @@ class Brand(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=255, null=True, blank=False)
+    pid = models.CharField(max_length=10, unique=True, null=True)
     description = models.TextField(blank=True)
     is_digital = models.BooleanField(default=False)
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     category = TreeForeignKey(
         "Category", on_delete=models.SET_NULL, null=True, blank=True
     )
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        null=True
+    )
     product_type = models.ForeignKey(
         "ProductType", on_delete=models.PROTECT, related_name="product",
         null=True
+    )
+    attribute_value = models.ManyToManyField(
+        "AttributeValue",
+        through="ProductAttributeValue",
+        related_name="product_attr_value",
     )
     objects = ActiveQueryset.as_manager()
 
@@ -70,6 +82,22 @@ class AttributeValue(models.Model):
 
     def __str__(self):
         return f"{self.attribute.name}-{self.attribute_value}"
+
+
+class ProductAttributeValue(models.Model):
+    attribute_value = models.ForeignKey(
+        AttributeValue,
+        on_delete=models.CASCADE,
+        related_name="product_value_av",
+    )
+    product = models.ForeignKey(
+        "Product",
+        on_delete=models.CASCADE,
+        related_name="producte_value_pl",
+    )
+
+    class Meta:
+        unique_together = ("attribute_value", "product")
 
 
 class ProductLineAttributeValue(models.Model):
@@ -118,10 +146,20 @@ class ProductLine(models.Model):
     )
     is_active = models.BooleanField(default=False)
     order = OrderField(unique_for_field="product", blank=True)
+    weight = models.FloatField(default=0)
     attribute_value = models.ManyToManyField(
         AttributeValue,
         through="ProductLineAttributeValue",
         related_name="product_line_attribute_value",
+    )
+    product_type = models.ForeignKey(
+        "ProductType", on_delete=models.PROTECT,
+        related_name="product_line_type", null=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        null=True
     )
     objects = ActiveQueryset.as_manager()
 
@@ -142,13 +180,13 @@ class ProductLine(models.Model):
 class ProductImage(models.Model):
     alternative_text = models.CharField(max_length=100)
     url = models.ImageField(upload_to=None, default="test.jpg")
-    productline = models.ForeignKey(
+    product_line = models.ForeignKey(
         ProductLine, on_delete=models.CASCADE, related_name="product_image"
     )
-    order = OrderField(unique_for_field="productline", blank=True)
+    order = OrderField(unique_for_field="product_line", blank=True)
 
     def clean(self):
-        qs = ProductImage.objects.filter(productline=self.productline)
+        qs = ProductImage.objects.filter(product_line=self.product_line)
         for obj in qs:
             if self.id != obj.id and self.order == obj.order:
                 raise ValidationError("Duplicate value.")
@@ -163,6 +201,8 @@ class ProductImage(models.Model):
 
 class ProductType(models.Model):
     name = models.CharField(max_length=100)
+    parent = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True)
     attribute = models.ManyToManyField(
         Attribute,
         through="ProductTypeAttribute",

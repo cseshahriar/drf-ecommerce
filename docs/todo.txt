@@ -75,10 +75,7 @@ table of contents:
     * Value Range
     * editing rules
 
-
-
-
-
+python manage.py spectacular --file schema.yml
 
 
 
